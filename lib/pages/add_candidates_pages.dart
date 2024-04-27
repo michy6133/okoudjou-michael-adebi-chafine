@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:okoudjoumichael_adebichafine/models/candidates.dart';
+import 'package:intl/intl.dart';
 
 class AddCandidatesPage extends StatefulWidget {
+  const AddCandidatesPage({super.key});
+
   @override
   _AddCandidatesPageState createState() => _AddCandidatesPageState();
 }
@@ -12,13 +14,12 @@ class AddCandidatesPage extends StatefulWidget {
 class _AddCandidatesPageState extends State<AddCandidatesPage> {
   final _formKey = GlobalKey<FormState>();
   Candidate candidate = Candidate(
-    firstName: '',
-    lastName: '',
-    imageUrl: '',
-    bio: '',
-    politicalParty: '',
-    birthDate: DateTime.now(),
-  );
+      firstName: '',
+      lastName: '',
+      imageUrl: '',
+      bio: '',
+      politicalParty: '',
+      birthDate: DateTime.now());
 
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
@@ -33,8 +34,42 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
     }
   }
 
-  void _openGallery(BuildContext context) {
-    _pickImage(ImageSource.gallery);
+  void _updateBirthDateField(DateTime pickedDate) {
+    final formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+    setState(() {
+      candidate.birthDate = pickedDate;
+    });
+  }
+
+
+
+  Future<void> _showPicker(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Galerie'),
+                  onTap: () {
+                    _pickImage(ImageSource.gallery);
+                    Navigator.of(context).pop();
+                  }),
+              ListTile(
+                leading: const Icon(Icons.camera),
+                title: const Text('Appareil photo'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -52,13 +87,21 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    _openGallery(context);
+                    _showPicker(context);
                   },
-                  child: CircleAvatar(
-                    radius: 100.0,
-                    backgroundImage: _imageFile != null
-                        ? FileImage(File(_imageFile!.path))
-                        : null,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: _imageFile != null
+                            ? FileImage(File(_imageFile!.path)) as ImageProvider
+                            : const AssetImage('assets/images/default_image.png') as ImageProvider,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: _imageFile == null
                         ? const Icon(Icons.camera)
                         : null,
@@ -139,11 +182,29 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: candidate.birthDate.toString().split(' ')[0],
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.calendar_month),
+                  initialValue: DateFormat('yyyy-MM-dd').format(candidate.birthDate),
+                  decoration: InputDecoration(
                     hintText: 'Entrez la date de naissance du candidat',
                     labelText: 'Date de naissance',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_month),
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: candidate.birthDate,
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null && picked != candidate.birthDate) {
+                          setState(() {
+                            candidate.birthDate = picked;
+                          });
+                          // Mettre à jour le champ du formulaire avec la date choisie
+                          _updateBirthDateField(picked);
+                        }
+                      },
+                    ),
+
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -155,19 +216,6 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                     candidate.birthDate = DateTime.parse(value!);
                   },
                   readOnly: true,
-                  onTap: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: candidate.birthDate,
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null && picked != candidate.birthDate) {
-                      setState(() {
-                        candidate.birthDate = picked;
-                      });
-                    }
-                  },
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
