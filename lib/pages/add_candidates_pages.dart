@@ -13,6 +13,7 @@ class AddCandidatesPage extends StatefulWidget {
 
 class _AddCandidatesPageState extends State<AddCandidatesPage> {
   final _formKey = GlobalKey<FormState>();
+  final _birthDateController = TextEditingController();
   Candidate candidate = Candidate(
       firstName: '',
       lastName: '',
@@ -38,10 +39,9 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
     final formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
     setState(() {
       candidate.birthDate = pickedDate;
+      _birthDateController.text = formattedDate;
     });
   }
-
-
 
   Future<void> _showPicker(BuildContext context) async {
     showModalBottomSheet(
@@ -109,24 +109,6 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: candidate.firstName,
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.person),
-                    hintText: 'Entrez le prénom du candidat',
-                    labelText: 'Prénom',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer le prénom du candidat';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    candidate.firstName = value!;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
                   initialValue: candidate.lastName,
                   decoration: const InputDecoration(
                     icon: Icon(Icons.person),
@@ -143,6 +125,25 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                     candidate.lastName = value!;
                   },
                 ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  initialValue: candidate.firstName,
+                  decoration: const InputDecoration(
+                    icon: Icon(Icons.person),
+                    hintText: 'Entrez le prénom du candidat',
+                    labelText: 'Prénom',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer le prénom du candidat';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    candidate.firstName = value!;
+                  },
+                ),
+
                 const SizedBox(height: 16.0),
                 TextFormField(
                   initialValue: candidate.politicalParty,
@@ -167,12 +168,12 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                   maxLines: 3,
                   decoration: const InputDecoration(
                     icon: Icon(Icons.description),
-                    hintText: 'Entrez la bio du candidat',
-                    labelText: 'Bio',
+                    hintText: 'Entrez la description du candidat',
+                    labelText: 'Description',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer la bio du candidat';
+                      return 'Veuillez entrer la description du candidat';
                     }
                     return null;
                   },
@@ -182,7 +183,7 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: DateFormat('yyyy-MM-dd').format(candidate.birthDate),
+                  controller: _birthDateController,
                   decoration: InputDecoration(
                     hintText: 'Entrez la date de naissance du candidat',
                     labelText: 'Date de naissance',
@@ -204,7 +205,6 @@ class _AddCandidatesPageState extends State<AddCandidatesPage> {
                         }
                       },
                     ),
-
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
