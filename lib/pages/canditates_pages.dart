@@ -1,10 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:okoudjoumichael_adebichafine/models/candidates.dart';
 import 'package:okoudjoumichael_adebichafine/pages/info_candidates_pages.dart';
-
 import 'add_candidates_pages.dart';
 
 class CandidatesPage extends StatefulWidget {
@@ -27,16 +25,20 @@ class _CandidatesPageState extends State<CandidatesPage> {
       body: ListView.builder(
         itemCount: candidates.length,
         itemBuilder: (context, index) {
+          final imageProvider = candidates[index].imageUrl != null
+              ? FileImage(File(candidates[index].imageUrl!))
+              : AssetImage('assets/images/default_image.png');
+
           return ListTile(
             title: Text('${candidates[index].firstName} ${candidates[index].lastName}'),
             subtitle: Text(candidates[index].bio),
             leading: CircleAvatar(
-              backgroundImage: MemoryImage(candidates[index].image as Uint8List),
+              backgroundImage: imageProvider as ImageProvider<Object>,
             ),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => InfoCandidatesPage(candidate: candidates[index])),
+                MaterialPageRoute(builder: (context) => InfoCandidatesPage(candidate: candidates[index], imageFile: File(candidates[index].imageUrl!))),
               );
             },
           );
@@ -47,7 +49,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddCandidatesPage()),
+            MaterialPageRoute(builder: (context) => const AddCandidatesPage()),
           ).then((value) {
             if (value != null) {
               setState(() {
@@ -58,10 +60,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.contacts), label: 'Contacts'),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.contacts), label: 'Contacts'),
           BottomNavigationBarItem(icon: Icon(Icons.ballot), label: 'Vote'),
-          const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );

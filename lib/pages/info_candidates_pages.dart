@@ -1,16 +1,19 @@
-import 'dart:typed_data';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:okoudjoumichael_adebichafine/models/candidates.dart';
 
-
 class InfoCandidatesPage extends StatelessWidget {
   final Candidate candidate;
+  final File? imageFile;
 
-  const InfoCandidatesPage({super.key, required this.candidate});
+  const InfoCandidatesPage({super.key, required this.candidate, required this.imageFile});
 
   @override
   Widget build(BuildContext context) {
+    final Object imageProvider = imageFile != null
+        ? FileImage(File(imageFile!.path))
+        : const AssetImage('assets/images/default_image.png');
+
     return Scaffold(
       appBar: AppBar(
         title: Text('${candidate.firstName} ${candidate.lastName}'),
@@ -27,10 +30,18 @@ class InfoCandidatesPage extends StatelessWidget {
                 child: Column(
                   children: [
                     const Text('Candidat'),
-                    CircleAvatar(
-                      backgroundImage: candidate.image == null
-                          ? null
-                          : MemoryImage(candidate as Uint8List),
+                    const SizedBox(height: 16.0),
+                    Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: imageProvider as ImageProvider<Object>,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
                   ],
                 ),
